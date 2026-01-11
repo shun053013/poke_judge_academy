@@ -7,7 +7,7 @@ const STORAGE_KEYS = {
 } as const;
 
 // スキーマバージョン
-const SCHEMA_VERSION = '1.0.0';
+const SCHEMA_VERSION = '1.1.0';
 
 /**
  * ユーザー進捗データを読み込む
@@ -21,10 +21,32 @@ export const loadUserProgress = (): UserProgress | null => {
 
     const progress = JSON.parse(data) as UserProgress;
 
-    // スキーマバージョンチェック（将来のマイグレーション用）
+    // スキーマバージョンチェックとマイグレーション
     if (progress.version !== SCHEMA_VERSION) {
-      console.warn('Progress data version mismatch. Migration may be needed.');
-      // TODO: スキーママイグレーション処理
+      console.warn('Progress data version mismatch. Migrating...');
+
+      // v1.0.0 -> v1.1.0: incorrectQuestions フィールドを追加
+      if (!progress.incorrectQuestions) {
+        const categories: QuestionCategory[] = ['rules', 'advanced_rules', 'penalties', 'tournament', 'mechanics', 'scenarios'];
+        progress.incorrectQuestions = {} as Record<QuestionCategory, string[]>;
+        categories.forEach(category => {
+          progress.incorrectQuestions[category] = [];
+        });
+        progress.version = SCHEMA_VERSION;
+        saveUserProgress(progress);
+        console.log('Migrated to schema version', SCHEMA_VERSION);
+      }
+    }
+
+    // incorrectQuestionsが存在しない場合は初期化（バージョンが同じでも）
+    if (!progress.incorrectQuestions) {
+      console.warn('incorrectQuestions field missing. Initializing...');
+      const categories: QuestionCategory[] = ['rules', 'advanced_rules', 'penalties', 'tournament', 'mechanics', 'scenarios'];
+      progress.incorrectQuestions = {} as Record<QuestionCategory, string[]>;
+      categories.forEach(category => {
+        progress.incorrectQuestions[category] = [];
+      });
+      saveUserProgress(progress);
     }
 
     return progress;
@@ -130,6 +152,11 @@ export const initializeProgress = (): UserProgress => {
     };
   });
 
+  const incorrectQuestions: Record<QuestionCategory, string[]> = {} as Record<QuestionCategory, string[]>;
+  categories.forEach(category => {
+    incorrectQuestions[category] = [];
+  });
+
   return {
     version: SCHEMA_VERSION,
     userId,
@@ -141,6 +168,7 @@ export const initializeProgress = (): UserProgress => {
     categoryStats,
     quizHistory: [],
     bookmarkedQuestions: [],
+    incorrectQuestions,
   };
 };
 
@@ -262,4 +290,75 @@ export const getStorageSize = (): number => {
     console.error('Failed to get storage size:', error);
     return 0;
   }
+};
+
+/**
+ * 不正解問題をリストに追加する
+ */
+export const addIncorrectQuestion = (category: QuestionCategory, questionId: string): void => {
+  const progress = loadUserProgress();
+  if (!progress) return;
+
+  // incorrectQuestionsが存在しない場合は初期化
+  if (!progress.incorrectQuestions) {
+    const categories: QuestionCategory[] = ['rules', 'advanced_rules', 'penalties', 'tournament', 'mechanics', 'scenarios'];
+    progress.incorrectQuestions = {} as Record<QuestionCategory, string[]>;
+    categories.forEach(cat => {
+      progress.incorrectQuestions[cat] = [];
+    });
+  }
+
+  // カテゴリーが存在しない場合は初期化
+  if (!progress.incorrectQuestions[category]) {
+    progress.incorrectQuestions[category] = [];
+  }
+
+  // 重複チェック
+  if (!progress.incorrectQuestions[category].includes(questionId)) {
+    progress.incorrectQuestions[category].push(questionId);
+    console.log('💾 Saving incorrect question to localStorage. Category:', category, 'QuestionId:', questionId);
+    console.log('📊 Current incorrect questions:', progress.incorrectQuestions[category]);
+    saveUserProgress(progress);
+  } else {
+    console.log('⚠️ Question already in incorrect list:', questionId);
+  }
+};
+
+/**
+ * 不正解問題をリストから削除する
+ */
+export const removeIncorrectQuestion = (category: QuestionCategory, questionId: string): void => {
+  const progress = loadUserProgress();
+  if (!progress) return;
+
+  // incorrectQuestionsが存在しない、またはカテゴリーが存在しない場合は何もしない
+  if (!progress.incorrectQuestions || !progress.incorrectQuestions[category]) {
+    return;
+  }
+
+  progress.incorrectQuestions[category] = progress.incorrectQuestions[category].filter(
+    id => id !== questionId
+  );
+  saveUserProgress(progress);
+};
+
+/**
+ * カテゴリー別の不正解問題数を取得する
+ */
+export const getIncorrectQuestionCount = (category: QuestionCategory): number => {
+  const progress = loadUserProgress();
+  if (!progress) {
+    console.log('⚠️ getIncorrectQuestionCount: No progress data');
+    return 0;
+  }
+
+  // incorrectQuestionsが存在しない場合は0を返す
+  if (!progress.incorrectQuestions) {
+    console.log('⚠️ getIncorrectQuestionCount: incorrectQuestions field missing');
+    return 0;
+  }
+
+  const count = progress.incorrectQuestions[category]?.length || 0;
+  console.log('📈 getIncorrectQuestionCount:', category, '→', count);
+  return count;
 };

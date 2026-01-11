@@ -8,6 +8,9 @@ import {
   saveCurrentSession,
   clearCurrentSession,
   calculateCategoryStats,
+  addIncorrectQuestion,
+  removeIncorrectQuestion,
+  getIncorrectQuestionCount,
 } from './localStorage';
 import { getQuestions } from './questionLoader';
 
@@ -17,6 +20,7 @@ interface QuizState {
   currentQuestionIndex: number;
   selectedAnswer: number | null;
   showExplanation: boolean;
+  isReviewMode: boolean;
 
   // 問題リスト
   questions: Question[];
@@ -39,6 +43,7 @@ interface QuizState {
   saveProgress: () => void;
   updateProgress: (session: QuizSession) => void;
   resetQuiz: () => void;
+  getIncorrectCount: (category: QuestionCategory) => number;
 }
 
 export const useQuizStore = create<QuizState>((set, get) => ({
@@ -47,6 +52,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
   currentQuestionIndex: 0,
   selectedAnswer: null,
   showExplanation: false,
+  isReviewMode: false,
   questions: [],
   userProgress: null,
   isLoading: false,
@@ -100,6 +106,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
       currentQuestionIndex: 0,
       selectedAnswer: null,
       showExplanation: false,
+      isReviewMode: config.reviewMode || false,
     });
 
     // セッションを保存（復元用）
@@ -113,7 +120,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
 
   // 回答を送信
   submitAnswer: () => {
-    const { currentSession, questions, currentQuestionIndex, selectedAnswer } = get();
+    const { currentSession, questions, currentQuestionIndex, selectedAnswer, isReviewMode } = get();
 
     if (!currentSession || selectedAnswer === null) {
       return;
@@ -130,6 +137,24 @@ export const useQuizStore = create<QuizState>((set, get) => ({
       isCorrect,
       timestamp: new Date().toISOString(),
     };
+
+    // 不正解問題リストの管理
+    if (!isCorrect && !isReviewMode) {
+      // 通常モードで不正解の場合、リストに追加
+      console.log('🔴 Adding incorrect question:', currentQuestion.id, 'to category:', currentSession.category);
+      addIncorrectQuestion(currentSession.category, currentQuestion.id);
+      console.log('✅ Question added to incorrect list');
+      // storeの状態も更新
+      get().loadProgress();
+    } else if (isCorrect && isReviewMode) {
+      // 復習モードで正解の場合、リストから削除
+      console.log('✅ Removing correct question:', currentQuestion.id, 'from category:', currentSession.category);
+      removeIncorrectQuestion(currentSession.category, currentQuestion.id);
+      // storeの状態も更新
+      get().loadProgress();
+    } else {
+      console.log('ℹ️ Question not added to incorrect list. isCorrect:', isCorrect, 'isReviewMode:', isReviewMode);
+    }
 
     // セッションに記録
     const updatedSession = {
@@ -164,7 +189,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
 
   // 問題をスキップ
   skipQuestion: () => {
-    const { currentSession, questions, currentQuestionIndex } = get();
+    const { currentSession, questions, currentQuestionIndex, isReviewMode } = get();
 
     if (!currentSession) return;
 
@@ -178,6 +203,13 @@ export const useQuizStore = create<QuizState>((set, get) => ({
       isCorrect: false,
       timestamp: new Date().toISOString(),
     };
+
+    // 通常モードではスキップした問題も不正解リストに追加
+    if (!isReviewMode) {
+      addIncorrectQuestion(currentSession.category, currentQuestion.id);
+      // storeの状態も更新
+      get().loadProgress();
+    }
 
     const updatedSession = {
       ...currentSession,
@@ -279,9 +311,15 @@ export const useQuizStore = create<QuizState>((set, get) => ({
       currentQuestionIndex: 0,
       selectedAnswer: null,
       showExplanation: false,
+      isReviewMode: false,
       questions: [],
     });
     clearCurrentSession();
+  },
+
+  // カテゴリー別の不正解問題数を取得
+  getIncorrectCount: (category: QuestionCategory) => {
+    return getIncorrectQuestionCount(category);
   },
 }));
 

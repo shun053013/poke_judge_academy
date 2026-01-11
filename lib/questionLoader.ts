@@ -1,4 +1,5 @@
 import { Question, QuestionCategory, QuestionBank, Difficulty, QuizConfig } from './types';
+import { loadUserProgress } from './localStorage';
 
 // 問題データのインポート
 import rulesData from '@/data/questions/rules.json';
@@ -41,6 +42,27 @@ export const getAllQuestions = (): Question[] => {
  * カテゴリーとオプションに基づいて問題を取得する
  */
 export const getQuestions = (config: QuizConfig): Question[] => {
+  // 復習モードの場合は不正解問題のみを取得
+  if (config.reviewMode) {
+    const progress = loadUserProgress();
+    const incorrectIds = progress?.incorrectQuestions[config.category] || [];
+
+    if (incorrectIds.length === 0) {
+      return []; // 不正解問題がない場合は空配列
+    }
+
+    let questions = getQuestionsByIds(incorrectIds);
+
+    // シャッフル
+    if (config.shuffle) {
+      questions = shuffleArray([...questions]);
+    }
+
+    // 指定された数だけ取得（復習モードでは全て出すこともあり得る）
+    return questions.slice(0, Math.min(config.questionCount, questions.length));
+  }
+
+  // 通常モード
   let questions = getQuestionsByCategory(config.category);
 
   // 難易度フィルタリング
@@ -86,6 +108,14 @@ export const getQuestionsByDifficulty = (
 export const getQuestionById = (questionId: string): Question | null => {
   const allQuestions = getAllQuestions();
   return allQuestions.find(q => q.id === questionId) || null;
+};
+
+/**
+ * 複数のIDで問題を取得する
+ */
+export const getQuestionsByIds = (questionIds: string[]): Question[] => {
+  const allQuestions = getAllQuestions();
+  return allQuestions.filter(q => questionIds.includes(q.id));
 };
 
 /**

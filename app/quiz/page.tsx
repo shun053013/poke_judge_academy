@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState, Suspense, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { getAllCategories, getCategoryStatistics } from '@/lib/questionLoader';
+import { useQuizStore } from '@/lib/store';
 import { QuestionCategory } from '@/lib/types';
 
 function QuizPageContent() {
@@ -18,7 +19,35 @@ function QuizPageContent() {
   );
   const [questionCount, setQuestionCount] = useState<number>(10);
 
+  const { userProgress, loadProgress } = useQuizStore();
   const categories = getAllCategories();
+
+  // コンポーネントマウント時とページが表示されるたびにuserProgressを読み込む
+  useEffect(() => {
+    // 初回読み込み
+    loadProgress();
+
+    // ページが表示されるたびに読み込む
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        console.log('🔄 Page visible, reloading progress...');
+        loadProgress();
+      }
+    };
+
+    const handleFocus = () => {
+      console.log('🔄 Window focused, reloading progress...');
+      loadProgress();
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [loadProgress]);
 
   const handleStartQuiz = () => {
     if (!selectedCategory) {
@@ -147,6 +176,43 @@ function QuizPageContent() {
                 全ての問題が出題されます。
               </p>
             )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* 苦手な問題を復習 */}
+      <Card variant="elevated">
+        <CardHeader>
+          <CardTitle>苦手な問題を復習</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {categories.map((category) => {
+              const incorrectCount = userProgress?.incorrectQuestions?.[category.id]?.length || 0;
+
+              return (
+                <div
+                  key={category.id}
+                  className="p-4 rounded-lg border-2 border-gray-200 hover:border-gray-300 transition-all"
+                >
+                  <h3 className="font-bold text-gray-900">{category.name}</h3>
+                  <p className="text-sm text-gray-600 mt-1">
+                    苦手な問題: {incorrectCount}問
+                  </p>
+                  <Button
+                    size="sm"
+                    variant={incorrectCount > 0 ? 'primary' : 'outline'}
+                    disabled={incorrectCount === 0}
+                    onClick={() =>
+                      router.push(`/quiz/${category.id}?reviewMode=true`)
+                    }
+                    className="mt-2 w-full"
+                  >
+                    {incorrectCount > 0 ? '復習する' : '復習する問題なし'}
+                  </Button>
+                </div>
+              );
+            })}
           </div>
         </CardContent>
       </Card>

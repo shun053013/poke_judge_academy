@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
+import { Badge } from '@/components/ui/Badge';
 import { QuizCard } from '@/components/quiz/QuizCard';
 import { AnswerOptions } from '@/components/quiz/AnswerOptions';
 import { QuizNavigation } from '@/components/quiz/QuizNavigation';
@@ -17,6 +19,7 @@ export default function QuizSessionPage() {
   const searchParams = useSearchParams();
   const category = params.category as QuestionCategory;
   const questionCount = Number(searchParams.get('count')) || 10;
+  const reviewMode = searchParams.get('reviewMode') === 'true';
 
   const {
     currentSession,
@@ -24,6 +27,7 @@ export default function QuizSessionPage() {
     selectedAnswer,
     showExplanation,
     questions,
+    isReviewMode,
     startQuiz,
     selectAnswer,
     submitAnswer,
@@ -41,10 +45,11 @@ export default function QuizSessionPage() {
         category,
         questionCount,
         shuffle: true,
+        reviewMode,
       });
       setIsInitialized(true);
     }
-  }, [category, questionCount, isInitialized, startQuiz]);
+  }, [category, questionCount, reviewMode, isInitialized, startQuiz]);
 
   // クイズが終了している場合
   if (currentSession && currentSession.endTime) {
@@ -59,8 +64,41 @@ export default function QuizSessionPage() {
     );
   }
 
-  // まだ読み込み中
-  if (!isInitialized || !currentSession || questions.length === 0) {
+  // まだ読み込み中または復習モードで問題がない場合
+  if (!isInitialized || !currentSession) {
+    return (
+      <div className="flex items-center justify-center min-h-[50vh]">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
+          <p className="text-gray-600">クイズを準備しています...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // 復習モードで不正解問題がない場合
+  if (isReviewMode && questions.length === 0) {
+    return (
+      <div className="max-w-3xl mx-auto text-center py-12">
+        <Card variant="elevated">
+          <CardContent className="p-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              すべて復習完了！
+            </h2>
+            <p className="text-gray-600 mb-6">
+              このカテゴリーには苦手な問題がありません。
+            </p>
+            <Button onClick={() => router.push('/quiz')}>
+              クイズ選択に戻る
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // 問題がない場合（通常モード）
+  if (questions.length === 0) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
         <div className="text-center">
@@ -84,6 +122,15 @@ export default function QuizSessionPage() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
+      {/* 復習モードバッジ */}
+      {isReviewMode && (
+        <div className="flex justify-center">
+          <Badge variant="default" className="text-sm px-4 py-1">
+            復習モード
+          </Badge>
+        </div>
+      )}
+
       {/* 進捗バー */}
       <div className="w-full bg-gray-200 rounded-full h-2">
         <div
