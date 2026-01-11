@@ -83,6 +83,7 @@ export interface UserProgress {
   categoryStats: Record<QuestionCategory, CategoryStats>;
   quizHistory: QuizSession[];
   bookmarkedQuestions: string[]; // 問題IDの配列
+  incorrectQuestions: Record<QuestionCategory, string[]>; // カテゴリー別の不正解問題ID
 }
 
 // カテゴリー情報（UI表示用）
@@ -100,4 +101,5 @@ export interface QuizConfig {
   difficulty?: Difficulty;      // 指定しない場合は全難易度
   questionCount: number;        // 出題数
   shuffle: boolean;             // 問題をシャッフルするか
+  reviewMode?: boolean;         // 復習モード（不正解問題のみ出題）
 }

@@ -7,7 +7,7 @@ const STORAGE_KEYS = {
 } as const;
 
 // スキーマバージョン
-const SCHEMA_VERSION = '1.0.0';
+const SCHEMA_VERSION = '1.1.0';
 
 /**
  * ユーザー進捗データを読み込む
@@ -21,10 +21,21 @@ export const loadUserProgress = (): UserProgress | null => {
 
     const progress = JSON.parse(data) as UserProgress;
 
-    // スキーマバージョンチェック（将来のマイグレーション用）
+    // スキーマバージョンチェックとマイグレーション
     if (progress.version !== SCHEMA_VERSION) {
-      console.warn('Progress data version mismatch. Migration may be needed.');
-      // TODO: スキーママイグレーション処理
+      console.warn('Progress data version mismatch. Migrating...');
+
+      // v1.0.0 -> v1.1.0: incorrectQuestions フィールドを追加
+      if (!progress.incorrectQuestions) {
+        const categories: QuestionCategory[] = ['rules', 'advanced_rules', 'penalties', 'tournament', 'mechanics', 'scenarios'];
+        progress.incorrectQuestions = {} as Record<QuestionCategory, string[]>;
+        categories.forEach(category => {
+          progress.incorrectQuestions[category] = [];
+        });
+        progress.version = SCHEMA_VERSION;
+        saveUserProgress(progress);
+        console.log('Migrated to schema version', SCHEMA_VERSION);
+      }
     }
 
     return progress;
@@ -130,6 +141,11 @@ export const initializeProgress = (): UserProgress => {
     };
   });
 
+  const incorrectQuestions: Record<QuestionCategory, string[]> = {} as Record<QuestionCategory, string[]>;
+  categories.forEach(category => {
+    incorrectQuestions[category] = [];
+  });
+
   return {
     version: SCHEMA_VERSION,
     userId,
@@ -141,6 +157,7 @@ export const initializeProgress = (): UserProgress => {
     categoryStats,
     quizHistory: [],
     bookmarkedQuestions: [],
+    incorrectQuestions,
   };
 };
 
@@ -262,4 +279,41 @@ export const getStorageSize = (): number => {
     console.error('Failed to get storage size:', error);
     return 0;
   }
+};
+
+/**
+ * 不正解問題をリストに追加する
+ */
+export const addIncorrectQuestion = (category: QuestionCategory, questionId: string): void => {
+  const progress = loadUserProgress();
+  if (!progress) return;
+
+  // 重複チェック
+  if (!progress.incorrectQuestions[category].includes(questionId)) {
+    progress.incorrectQuestions[category].push(questionId);
+    saveUserProgress(progress);
+  }
+};
+
+/**
+ * 不正解問題をリストから削除する
+ */
+export const removeIncorrectQuestion = (category: QuestionCategory, questionId: string): void => {
+  const progress = loadUserProgress();
+  if (!progress) return;
+
+  progress.incorrectQuestions[category] = progress.incorrectQuestions[category].filter(
+    id => id !== questionId
+  );
+  saveUserProgress(progress);
+};
+
+/**
+ * カテゴリー別の不正解問題数を取得する
+ */
+export const getIncorrectQuestionCount = (category: QuestionCategory): number => {
+  const progress = loadUserProgress();
+  if (!progress) return 0;
+
+  return progress.incorrectQuestions[category]?.length || 0;
 };

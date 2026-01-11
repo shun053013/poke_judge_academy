@@ -6,6 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { getAllCategories, getCategoryStatistics } from '@/lib/questionLoader';
+import { getIncorrectQuestionCount } from '@/lib/localStorage';
 import { QuestionCategory } from '@/lib/types';
 
 function QuizPageContent() {
@@ -147,6 +148,43 @@ function QuizPageContent() {
                 全ての問題が出題されます。
               </p>
             )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* 苦手な問題を復習 */}
+      <Card variant="elevated">
+        <CardHeader>
+          <CardTitle>苦手な問題を復習</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {categories.map((category) => {
+              const incorrectCount = getIncorrectQuestionCount(category.id);
+
+              return (
+                <div
+                  key={category.id}
+                  className="p-4 rounded-lg border-2 border-gray-200 hover:border-gray-300 transition-all"
+                >
+                  <h3 className="font-bold text-gray-900">{category.name}</h3>
+                  <p className="text-sm text-gray-600 mt-1">
+                    苦手な問題: {incorrectCount}問
+                  </p>
+                  <Button
+                    size="sm"
+                    variant={incorrectCount === 0 ? 'outline' : 'default'}
+                    disabled={incorrectCount === 0}
+                    onClick={() =>
+                      router.push(`/quiz/${category.id}?reviewMode=true`)
+                    }
+                    className="mt-2 w-full"
+                  >
+                    復習する
+                  </Button>
+                </div>
+              );
+            })}
           </div>
         </CardContent>
       </Card>
