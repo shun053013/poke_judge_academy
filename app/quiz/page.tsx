@@ -201,14 +201,14 @@ function QuizPageContent() {
                   </p>
                   <Button
                     size="sm"
-                    variant="default"
+                    variant={incorrectCount > 0 ? 'default' : 'outline'}
                     disabled={incorrectCount === 0}
                     onClick={() =>
                       router.push(`/quiz/${category.id}?reviewMode=true`)
                     }
                     className="mt-2 w-full"
                   >
-                    復習する
+                    {incorrectCount > 0 ? '復習する' : '復習する問題なし'}
                   </Button>
                 </div>
               );
