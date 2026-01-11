@@ -113,7 +113,7 @@ export const initializeProgress = (): UserProgress => {
   const userId = generateUUID();
   const now = new Date().toISOString();
 
-  const categories: QuestionCategory[] = ['rules', 'penalties', 'tournament', 'mechanics', 'scenarios'];
+  const categories: QuestionCategory[] = ['rules', 'advanced_rules', 'penalties', 'tournament', 'mechanics', 'scenarios'];
   const categoryStats: Record<QuestionCategory, CategoryStats> = {} as Record<QuestionCategory, CategoryStats>;
 
   categories.forEach(category => {

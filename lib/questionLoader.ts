@@ -2,6 +2,7 @@ import { Question, QuestionCategory, QuestionBank, Difficulty, QuizConfig } from
 
 // 問題データのインポート
 import rulesData from '@/data/questions/rules.json';
+import advancedRulesData from '@/data/questions/advanced_rules.json';
 import penaltiesData from '@/data/questions/penalties.json';
 import tournamentData from '@/data/questions/tournament.json';
 import mechanicsData from '@/data/questions/mechanics.json';
@@ -10,6 +11,7 @@ import scenariosData from '@/data/questions/scenarios.json';
 // 問題バンクのマップ
 const questionBanks: Record<QuestionCategory, QuestionBank> = {
   rules: rulesData as QuestionBank,
+  advanced_rules: advancedRulesData as QuestionBank,
   penalties: penaltiesData as QuestionBank,
   tournament: tournamentData as QuestionBank,
   mechanics: mechanicsData as QuestionBank,
@@ -150,6 +152,13 @@ export const getCategoryInfo = (category: QuestionCategory) => {
       icon: 'BookOpen',
       color: 'blue',
     },
+    advanced_rules: {
+      id: 'advanced_rules' as QuestionCategory,
+      name: '上級ルール',
+      description: '詳細な処理手順、タイミング、効果の適用順序など',
+      icon: 'GraduationCap',
+      color: 'indigo',
+    },
     penalties: {
       id: 'penalties' as QuestionCategory,
       name: 'ペナルティ',
@@ -187,6 +196,6 @@ export const getCategoryInfo = (category: QuestionCategory) => {
  * 全カテゴリーの情報を取得する
  */
 export const getAllCategories = () => {
-  const categories: QuestionCategory[] = ['rules', 'penalties', 'tournament', 'mechanics', 'scenarios'];
+  const categories: QuestionCategory[] = ['rules', 'advanced_rules', 'penalties', 'tournament', 'mechanics', 'scenarios'];
   return categories.map(cat => getCategoryInfo(cat));
 };

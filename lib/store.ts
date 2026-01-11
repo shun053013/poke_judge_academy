@@ -252,7 +252,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
       : 0;
 
     // カテゴリー別統計を再計算
-    const categories: QuestionCategory[] = ['rules', 'penalties', 'tournament', 'mechanics', 'scenarios'];
+    const categories: QuestionCategory[] = ['rules', 'advanced_rules', 'penalties', 'tournament', 'mechanics', 'scenarios'];
     const updatedCategoryStats = { ...userProgress.categoryStats };
 
     categories.forEach(category => {
