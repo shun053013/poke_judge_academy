@@ -26,7 +26,7 @@ function QuizPageContent() {
       return;
     }
 
-    router.push(`/quiz/${selectedCategory}`);
+    router.push(`/quiz/${selectedCategory}?count=${questionCount}`);
   };
 
   const categoryStats = selectedCategory
