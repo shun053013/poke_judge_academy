@@ -201,7 +201,7 @@ function QuizPageContent() {
                   </p>
                   <Button
                     size="sm"
-                    variant={incorrectCount === 0 ? 'outline' : 'default'}
+                    variant="default"
                     disabled={incorrectCount === 0}
                     onClick={() =>
                       router.push(`/quiz/${category.id}?reviewMode=true`)
