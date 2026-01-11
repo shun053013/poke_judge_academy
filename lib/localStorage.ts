@@ -316,7 +316,11 @@ export const addIncorrectQuestion = (category: QuestionCategory, questionId: str
   // 重複チェック
   if (!progress.incorrectQuestions[category].includes(questionId)) {
     progress.incorrectQuestions[category].push(questionId);
+    console.log('💾 Saving incorrect question to localStorage. Category:', category, 'QuestionId:', questionId);
+    console.log('📊 Current incorrect questions:', progress.incorrectQuestions[category]);
     saveUserProgress(progress);
+  } else {
+    console.log('⚠️ Question already in incorrect list:', questionId);
   }
 };
 
@@ -343,10 +347,18 @@ export const removeIncorrectQuestion = (category: QuestionCategory, questionId: 
  */
 export const getIncorrectQuestionCount = (category: QuestionCategory): number => {
   const progress = loadUserProgress();
-  if (!progress) return 0;
+  if (!progress) {
+    console.log('⚠️ getIncorrectQuestionCount: No progress data');
+    return 0;
+  }
 
   // incorrectQuestionsが存在しない場合は0を返す
-  if (!progress.incorrectQuestions) return 0;
+  if (!progress.incorrectQuestions) {
+    console.log('⚠️ getIncorrectQuestionCount: incorrectQuestions field missing');
+    return 0;
+  }
 
-  return progress.incorrectQuestions[category]?.length || 0;
+  const count = progress.incorrectQuestions[category]?.length || 0;
+  console.log('📈 getIncorrectQuestionCount:', category, '→', count);
+  return count;
 };
