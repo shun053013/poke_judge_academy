@@ -136,7 +136,7 @@ export default function QuizSessionPage() {
       {/* 難易度バッジ */}
       {difficulty && (
         <div className="flex justify-center">
-          <Badge variant="outline" className="text-sm px-4 py-1">
+          <Badge variant="primary" className="text-sm px-4 py-1">
             {difficulty === 'beginner' && '初級'}
             {difficulty === 'intermediate' && '中級'}
             {difficulty === 'advanced' && '上級'}
