@@ -1,0 +1,135 @@
+{
+  "category": "penalties",
+  "version": "1.0.0",
+  "lastUpdated": "2026-01-11",
+  "questions": [
+    {
+      "id": "penalties-001",
+      "category": "penalties",
+      "difficulty": "beginner",
+      "question": "プレイヤーが軽微なルール違反をした場合、最初に与えられるペナルティは何ですか？",
+      "options": [
+        "注意（Caution）",
+        "警告（Warning）",
+        "ゲームロス（Game Loss）",
+        "失格（Disqualification）"
+      ],
+      "correctAnswer": 1,
+      "explanation": "軽微なルール違反に対しては、まず警告（Warning）が与えられます。注意（Caution）は公式ペナルティではありません。",
+      "tags": ["ペナルティ", "警告"],
+      "reference": "ペナルティガイドライン 2.1節"
+    },
+    {
+      "id": "penalties-002",
+      "category": "penalties",
+      "difficulty": "intermediate",
+      "question": "デッキに規定外のカードが含まれていた場合、どのペナルティが科されますか？",
+      "options": [
+        "警告（Warning）",
+        "プライズペナルティ（Prize Penalty）",
+        "ゲームロス（Game Loss）",
+        "失格（Disqualification）"
+      ],
+      "correctAnswer": 2,
+      "explanation": "デッキリスト不備やデッキ構築ルール違反は重大な違反とみなされ、ゲームロス（Game Loss）が科されます。",
+      "tags": ["デッキ違反", "ゲームロス"],
+      "reference": "ペナルティガイドライン 3.2節"
+    },
+    {
+      "id": "penalties-003",
+      "category": "penalties",
+      "difficulty": "advanced",
+      "question": "意図的な不正行為（チーティング）が確認された場合、どのペナルティが科されますか？",
+      "options": [
+        "警告（Warning）",
+        "ゲームロス（Game Loss）",
+        "マッチロス（Match Loss）",
+        "失格（Disqualification）"
+      ],
+      "correctAnswer": 3,
+      "explanation": "意図的な不正行為やチーティングは最も重大な違反であり、即座に失格（Disqualification）となり、大会から除外されます。",
+      "tags": ["チーティング", "失格"],
+      "reference": "ペナルティガイドライン 4.1節"
+    },
+    {
+      "id": "penalties-004",
+      "category": "penalties",
+      "difficulty": "intermediate",
+      "question": "「スローマッチ」とみなされるのは、どのような状況ですか？",
+      "options": [
+        "1ターンに1分以上かかる",
+        "故意に試合進行を遅らせる",
+        "考える時間が30秒を超える",
+        "デッキをシャッフルするのに時間がかかる"
+      ],
+      "correctAnswer": 1,
+      "explanation": "スローマッチのペナルティは、故意にゲームの進行を遅らせる行為に対して科されます。単に考える時間が長いだけでは該当しません。",
+      "tags": ["スローマッチ", "遅延行為"],
+      "reference": "ペナルティガイドライン 3.5節"
+    },
+    {
+      "id": "penalties-005",
+      "category": "penalties",
+      "difficulty": "beginner",
+      "question": "相手プレイヤーに対して暴言や威嚇的な行為をした場合、どのペナルティが科される可能性がありますか？",
+      "options": [
+        "注意のみ",
+        "警告（Warning）",
+        "ゲームロス（Game Loss）または失格（Disqualification）",
+        "ペナルティなし"
+      ],
+      "correctAnswer": 2,
+      "explanation": "非スポーツマン的行為（Unsporting Conduct）は重大な違反であり、内容によってゲームロスまたは失格となる可能性があります。",
+      "tags": ["非スポーツマン的行為", "マナー"],
+      "reference": "ペナルティガイドライン 3.6節"
+    },
+    {
+      "id": "penalties-006",
+      "category": "penalties",
+      "difficulty": "advanced",
+      "question": "プレイヤーが同じ違反で2回目の警告を受けた場合、次に何が起こりますか？",
+      "options": [
+        "3回目の警告",
+        "ゲームロス（Game Loss）にアップグレード",
+        "プライズペナルティ（Prize Penalty）",
+        "何も起こらない"
+      ],
+      "correctAnswer": 1,
+      "explanation": "同じカテゴリーの違反で複数回警告を受けた場合、ペナルティはゲームロスにアップグレードされます。",
+      "tags": ["ペナルティアップグレード", "累積"],
+      "reference": "ペナルティガイドライン 2.3節"
+    },
+    {
+      "id": "penalties-007",
+      "category": "penalties",
+      "difficulty": "intermediate",
+      "question": "マークドカード（識別可能なカード）が発見された場合、どのように対処しますか？",
+      "options": [
+        "そのカードを交換し、警告を与える",
+        "即座に失格にする",
+        "デッキチェックを行い、状況に応じてペナルティを決定",
+        "ゲームロスを科す"
+      ],
+      "correctAnswer": 2,
+      "explanation": "マークドカードの場合、意図的かどうかを調査する必要があります。ジャッジはデッキをチェックし、状況に応じて警告からゲームロス、場合によっては失格までのペナルティを科します。",
+      "tags": ["マークドカード", "デッキチェック"],
+      "reference": "ペナルティガイドライン 3.3節"
+    },
+    {
+      "id": "penalties-008",
+      "category": "penalties",
+      "difficulty": "advanced",
+      "question": "「プロシージャルエラー（手順ミス）」に該当するのはどれですか？",
+      "options": [
+        "ワザの効果を間違えて適用した",
+        "ドローフェイズでカードを引き忘れた",
+        "故意にカードを隠した",
+        "相手を侮辱する発言をした"
+      ],
+      "correctAnswer": 1,
+      "explanation": "プロシージャルエラーは、ゲームの手順に関する単純なミスです。ドローを忘れる、エネルギーを複数枚つけるなどが該当します。通常は警告が科されます。",
+      "tags": ["プロシージャルエラー", "手順ミス"],
+      "reference": "ペナルティガイドライン 3.1節"
+    }
+  ]
+}
