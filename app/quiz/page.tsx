@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/Badge';
 import { getAllCategories, getCategoryStatistics } from '@/lib/questionLoader';
 import { QuestionCategory } from '@/lib/types';
 
-export default function QuizPage() {
+function QuizPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const preselectedCategory = searchParams.get('category') as QuestionCategory | null;
@@ -163,5 +163,13 @@ export default function QuizPage() {
         </Button>
       </div>
     </div>
+  );
+}
+
+export default function QuizPage() {
+  return (
+    <Suspense fallback={<div className="max-w-4xl mx-auto text-center py-8">読み込み中...</div>}>
+      <QuizPageContent />
+    </Suspense>
   );
 }
