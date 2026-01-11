@@ -1,6 +1,7 @@
 // カテゴリー型定義
 export type QuestionCategory =
   | 'rules'          // 基本ルール
+  | 'advanced_rules' // 上級ルール
   | 'penalties'      // ペナルティ
   | 'tournament'     // 大会運営
   | 'mechanics'      // ゲームメカニクス
