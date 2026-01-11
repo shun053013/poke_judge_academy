@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/Card';
 import { QuizCard } from '@/components/quiz/QuizCard';
 import { AnswerOptions } from '@/components/quiz/AnswerOptions';
@@ -14,7 +14,9 @@ import { Loader2 } from 'lucide-react';
 export default function QuizSessionPage() {
   const router = useRouter();
   const params = useParams();
+  const searchParams = useSearchParams();
   const category = params.category as QuestionCategory;
+  const questionCount = Number(searchParams.get('count')) || 10;
 
   const {
     currentSession,
@@ -37,12 +39,12 @@ export default function QuizSessionPage() {
     if (!isInitialized && category) {
       startQuiz({
         category,
-        questionCount: 10,
+        questionCount,
         shuffle: true,
       });
       setIsInitialized(true);
     }
-  }, [category, isInitialized, startQuiz]);
+  }, [category, questionCount, isInitialized, startQuiz]);
 
   // クイズが終了している場合
   if (currentSession && currentSession.endTime) {
