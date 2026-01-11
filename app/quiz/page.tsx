@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { getAllCategories, getCategoryStatistics } from '@/lib/questionLoader';
 import { getIncorrectQuestionCount } from '@/lib/localStorage';
-import { QuestionCategory } from '@/lib/types';
+import { QuestionCategory, Difficulty } from '@/lib/types';
 
 function QuizPageContent() {
   const router = useRouter();
@@ -17,6 +17,7 @@ function QuizPageContent() {
   const [selectedCategory, setSelectedCategory] = useState<QuestionCategory | null>(
     preselectedCategory
   );
+  const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty | null>(null);
   const [questionCount, setQuestionCount] = useState<number>(10);
 
   const categories = getAllCategories();
@@ -27,7 +28,13 @@ function QuizPageContent() {
       return;
     }
 
-    router.push(`/quiz/${selectedCategory}?count=${questionCount}`);
+    // Build URL with optional difficulty parameter
+    const params = new URLSearchParams({ count: questionCount.toString() });
+    if (selectedDifficulty) {
+      params.set('difficulty', selectedDifficulty);
+    }
+
+    router.push(`/quiz/${selectedCategory}?${params.toString()}`);
   };
 
   const categoryStats = selectedCategory
@@ -121,10 +128,70 @@ function QuizPageContent() {
         </CardContent>
       </Card>
 
+      {/* 難易度選択 */}
+      <Card variant="elevated">
+        <CardHeader>
+          <CardTitle>2. 難易度を選択</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {[
+              { value: null, label: 'すべて', description: '全レベル' },
+              { value: 'beginner' as Difficulty, label: '初級', description: '基礎問題' },
+              { value: 'intermediate' as Difficulty, label: '中級', description: '応用問題' },
+              { value: 'advanced' as Difficulty, label: '上級', description: '高難度問題' },
+            ].map((option) => {
+              const isSelected = selectedDifficulty === option.value;
+              const count = option.value && categoryStats
+                ? categoryStats[option.value]
+                : categoryStats?.total || 0;
+
+              return (
+                <button
+                  key={option.label}
+                  onClick={() => setSelectedDifficulty(option.value)}
+                  className={`p-4 rounded-lg border-2 transition-all ${
+                    isSelected
+                      ? 'border-blue-500 bg-blue-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                  disabled={!selectedCategory}
+                >
+                  <div className="text-center">
+                    <h3 className="font-bold text-gray-900">{option.label}</h3>
+                    <p className="text-sm text-gray-600 mt-1">{option.description}</p>
+                    {selectedCategory && (
+                      <Badge variant="default" size="sm" className="mt-2">
+                        {count}問
+                      </Badge>
+                    )}
+                    {isSelected && (
+                      <div className="mt-2 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center mx-auto">
+                        <svg
+                          className="w-4 h-4 text-white"
+                          fill="none"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path d="M5 13l4 4L19 7"></path>
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
+
       {/* 問題数選択 */}
       <Card variant="elevated">
         <CardHeader>
-          <CardTitle>2. 問題数を選択</CardTitle>
+          <CardTitle>3. 問題数を選択</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -132,7 +199,11 @@ function QuizPageContent() {
               <input
                 type="range"
                 min="5"
-                max={categoryStats?.total || 50}
+                max={
+                  selectedDifficulty && categoryStats
+                    ? categoryStats[selectedDifficulty]
+                    : categoryStats?.total || 50
+                }
                 step="5"
                 value={questionCount}
                 onChange={(e) => setQuestionCount(Number(e.target.value))}
@@ -142,7 +213,13 @@ function QuizPageContent() {
                 {questionCount}問
               </span>
             </div>
-            {categoryStats && questionCount > categoryStats.total && (
+            {categoryStats && selectedDifficulty && questionCount > categoryStats[selectedDifficulty] && (
+              <p className="text-sm text-orange-600">
+                ※ 選択した難易度には{categoryStats[selectedDifficulty]}問しかありません。
+                全ての問題が出題されます。
+              </p>
+            )}
+            {categoryStats && !selectedDifficulty && questionCount > categoryStats.total && (
               <p className="text-sm text-orange-600">
                 ※ 選択したカテゴリーには{categoryStats.total}問しかありません。
                 全ての問題が出題されます。

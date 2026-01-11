@@ -8,7 +8,7 @@ import { AnswerOptions } from '@/components/quiz/AnswerOptions';
 import { QuizNavigation } from '@/components/quiz/QuizNavigation';
 import { ResultsSummary } from '@/components/quiz/ResultsSummary';
 import { useQuizStore } from '@/lib/store';
-import { QuestionCategory } from '@/lib/types';
+import { QuestionCategory, Difficulty } from '@/lib/types';
 import { Loader2 } from 'lucide-react';
 
 export default function QuizSessionPage() {
@@ -18,6 +18,7 @@ export default function QuizSessionPage() {
   const category = params.category as QuestionCategory;
   const questionCount = Number(searchParams.get('count')) || 10;
   const reviewMode = searchParams.get('reviewMode') === 'true';
+  const difficulty = searchParams.get('difficulty') as Difficulty | null;
 
   const {
     currentSession,
@@ -44,10 +45,11 @@ export default function QuizSessionPage() {
         questionCount,
         shuffle: true,
         reviewMode,
+        difficulty: difficulty || undefined,
       });
       setIsInitialized(true);
     }
-  }, [category, questionCount, reviewMode, isInitialized, startQuiz]);
+  }, [category, questionCount, reviewMode, difficulty, isInitialized, startQuiz]);
 
   // クイズが終了している場合
   if (currentSession && currentSession.endTime) {
@@ -125,6 +127,17 @@ export default function QuizSessionPage() {
         <div className="flex justify-center">
           <Badge variant="default" className="text-sm px-4 py-1">
             復習モード
+          </Badge>
+        </div>
+      )}
+
+      {/* 難易度バッジ */}
+      {difficulty && (
+        <div className="flex justify-center">
+          <Badge variant="outline" className="text-sm px-4 py-1">
+            {difficulty === 'beginner' && '初級'}
+            {difficulty === 'intermediate' && '中級'}
+            {difficulty === 'advanced' && '上級'}
           </Badge>
         </div>
       )}
