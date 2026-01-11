@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState, Suspense, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { getAllCategories, getCategoryStatistics } from '@/lib/questionLoader';
-import { getIncorrectQuestionCount } from '@/lib/localStorage';
+import { useQuizStore } from '@/lib/store';
 import { QuestionCategory, Difficulty } from '@/lib/types';
 
 function QuizPageContent() {
@@ -20,7 +20,35 @@ function QuizPageContent() {
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty | null>(null);
   const [questionCount, setQuestionCount] = useState<number>(10);
 
+  const { userProgress, loadProgress } = useQuizStore();
   const categories = getAllCategories();
+
+  // コンポーネントマウント時とページが表示されるたびにuserProgressを読み込む
+  useEffect(() => {
+    // 初回読み込み
+    loadProgress();
+
+    // ページが表示されるたびに読み込む
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        console.log('🔄 Page visible, reloading progress...');
+        loadProgress();
+      }
+    };
+
+    const handleFocus = () => {
+      console.log('🔄 Window focused, reloading progress...');
+      loadProgress();
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [loadProgress]);
 
   const handleStartQuiz = () => {
     if (!selectedCategory) {
@@ -237,7 +265,7 @@ function QuizPageContent() {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {categories.map((category) => {
-              const incorrectCount = getIncorrectQuestionCount(category.id);
+              const incorrectCount = userProgress?.incorrectQuestions?.[category.id]?.length || 0;
 
               return (
                 <div
@@ -250,14 +278,14 @@ function QuizPageContent() {
                   </p>
                   <Button
                     size="sm"
-                    variant={incorrectCount === 0 ? 'outline' : 'default'}
+                    variant={incorrectCount > 0 ? 'primary' : 'outline'}
                     disabled={incorrectCount === 0}
                     onClick={() =>
                       router.push(`/quiz/${category.id}?reviewMode=true`)
                     }
                     className="mt-2 w-full"
                   >
-                    復習する
+                    {incorrectCount > 0 ? '復習する' : '復習する問題なし'}
                   </Button>
                 </div>
               );

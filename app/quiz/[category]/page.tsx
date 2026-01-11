@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
+import { Badge } from '@/components/ui/Badge';
 import { QuizCard } from '@/components/quiz/QuizCard';
 import { AnswerOptions } from '@/components/quiz/AnswerOptions';
 import { QuizNavigation } from '@/components/quiz/QuizNavigation';

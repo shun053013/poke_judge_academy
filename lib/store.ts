@@ -141,10 +141,19 @@ export const useQuizStore = create<QuizState>((set, get) => ({
     // 不正解問題リストの管理
     if (!isCorrect && !isReviewMode) {
       // 通常モードで不正解の場合、リストに追加
+      console.log('🔴 Adding incorrect question:', currentQuestion.id, 'to category:', currentSession.category);
       addIncorrectQuestion(currentSession.category, currentQuestion.id);
+      console.log('✅ Question added to incorrect list');
+      // storeの状態も更新
+      get().loadProgress();
     } else if (isCorrect && isReviewMode) {
       // 復習モードで正解の場合、リストから削除
+      console.log('✅ Removing correct question:', currentQuestion.id, 'from category:', currentSession.category);
       removeIncorrectQuestion(currentSession.category, currentQuestion.id);
+      // storeの状態も更新
+      get().loadProgress();
+    } else {
+      console.log('ℹ️ Question not added to incorrect list. isCorrect:', isCorrect, 'isReviewMode:', isReviewMode);
     }
 
     // セッションに記録
@@ -198,6 +207,8 @@ export const useQuizStore = create<QuizState>((set, get) => ({
     // 通常モードではスキップした問題も不正解リストに追加
     if (!isReviewMode) {
       addIncorrectQuestion(currentSession.category, currentQuestion.id);
+      // storeの状態も更新
+      get().loadProgress();
     }
 
     const updatedSession = {

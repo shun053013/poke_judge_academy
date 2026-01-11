@@ -38,6 +38,17 @@ export const loadUserProgress = (): UserProgress | null => {
       }
     }
 
+    // incorrectQuestionsが存在しない場合は初期化（バージョンが同じでも）
+    if (!progress.incorrectQuestions) {
+      console.warn('incorrectQuestions field missing. Initializing...');
+      const categories: QuestionCategory[] = ['rules', 'advanced_rules', 'penalties', 'tournament', 'mechanics', 'scenarios'];
+      progress.incorrectQuestions = {} as Record<QuestionCategory, string[]>;
+      categories.forEach(category => {
+        progress.incorrectQuestions[category] = [];
+      });
+      saveUserProgress(progress);
+    }
+
     return progress;
   } catch (error) {
     console.error('Failed to load user progress:', error);
@@ -288,10 +299,28 @@ export const addIncorrectQuestion = (category: QuestionCategory, questionId: str
   const progress = loadUserProgress();
   if (!progress) return;
 
+  // incorrectQuestionsが存在しない場合は初期化
+  if (!progress.incorrectQuestions) {
+    const categories: QuestionCategory[] = ['rules', 'advanced_rules', 'penalties', 'tournament', 'mechanics', 'scenarios'];
+    progress.incorrectQuestions = {} as Record<QuestionCategory, string[]>;
+    categories.forEach(cat => {
+      progress.incorrectQuestions[cat] = [];
+    });
+  }
+
+  // カテゴリーが存在しない場合は初期化
+  if (!progress.incorrectQuestions[category]) {
+    progress.incorrectQuestions[category] = [];
+  }
+
   // 重複チェック
   if (!progress.incorrectQuestions[category].includes(questionId)) {
     progress.incorrectQuestions[category].push(questionId);
+    console.log('💾 Saving incorrect question to localStorage. Category:', category, 'QuestionId:', questionId);
+    console.log('📊 Current incorrect questions:', progress.incorrectQuestions[category]);
     saveUserProgress(progress);
+  } else {
+    console.log('⚠️ Question already in incorrect list:', questionId);
   }
 };
 
@@ -301,6 +330,11 @@ export const addIncorrectQuestion = (category: QuestionCategory, questionId: str
 export const removeIncorrectQuestion = (category: QuestionCategory, questionId: string): void => {
   const progress = loadUserProgress();
   if (!progress) return;
+
+  // incorrectQuestionsが存在しない、またはカテゴリーが存在しない場合は何もしない
+  if (!progress.incorrectQuestions || !progress.incorrectQuestions[category]) {
+    return;
+  }
 
   progress.incorrectQuestions[category] = progress.incorrectQuestions[category].filter(
     id => id !== questionId
@@ -313,7 +347,18 @@ export const removeIncorrectQuestion = (category: QuestionCategory, questionId: 
  */
 export const getIncorrectQuestionCount = (category: QuestionCategory): number => {
   const progress = loadUserProgress();
-  if (!progress) return 0;
+  if (!progress) {
+    console.log('⚠️ getIncorrectQuestionCount: No progress data');
+    return 0;
+  }
 
-  return progress.incorrectQuestions[category]?.length || 0;
+  // incorrectQuestionsが存在しない場合は0を返す
+  if (!progress.incorrectQuestions) {
+    console.log('⚠️ getIncorrectQuestionCount: incorrectQuestions field missing');
+    return 0;
+  }
+
+  const count = progress.incorrectQuestions[category]?.length || 0;
+  console.log('📈 getIncorrectQuestionCount:', category, '→', count);
+  return count;
 };
